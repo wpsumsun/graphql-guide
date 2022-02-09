@@ -3,6 +3,21 @@ const axios = require('axios');
 
 // Launch Type
 
+const userList = [
+    { name: "张三", id: 1, age: 18 },
+    { name: "李四", id: 2, age: 19 },
+    { name: "王五", id: 3, age: 20 },
+]
+
+const UserType = new GraphQLObjectType({
+    name: 'User',
+    fields: () => ({
+        id: { type: GraphQLInt },
+        name: { type: GraphQLString },
+        age: { type: GraphQLInt },
+    })
+});
+
 const LaunchType = new GraphQLObjectType({
     name: 'Launch',
     fields: () => ({
@@ -63,9 +78,79 @@ const RootQuery = new GraphQLObjectType({
                 return axios.get(`https://api.spacexdata.com/v3/rockets/${args.id}`).then(res => res.data);
             }
         },
+        userList: {
+            type: new GraphQLList(UserType),
+            resolve(parent, args) {
+                return userList;
+            }
+        },
+        getUserById: {
+            type: UserType,
+            args: {
+                id: { type: GraphQLInt }
+            },
+            resolve(parent, args) {
+                return userList.find(user => user.id === args.id);
+            }
+        }
+    }
+});
+
+const RootMutations = new GraphQLObjectType({
+    name: 'RootMutations',
+    fields: {
+        addUser: {
+            type: UserType,
+            args: {
+                name: { type: GraphQLString },
+                age: { type: GraphQLInt }
+            },
+            resolve(parent, args) {
+                const id = userList.length + 1;
+                userList.push({ name: args.name, id, age: args.age });
+                return {
+                    name: args.name,
+                    age: args.age,
+                    id
+                }
+            }
+        },
+        deleteUser: {
+            type: UserType,
+            args: {
+                id: { type: GraphQLInt }
+            },
+            resolve(parent, args) {
+                const idx = userList.findIndex(user => user.id === args.id);
+                if (idx === -1) {
+                    throw new Error('User not found');
+                }
+                return userList[idx];
+            }
+        },
+        updateUser: {
+            type: UserType,
+            args: {
+                id: { type: GraphQLInt },
+                name: { type: GraphQLString },
+                age: { type: GraphQLInt }
+            },
+            resolve(parent, args) {
+                const idx = userList.findIndex(user => user.id === args.id);
+                if (idx > -1) {
+                    userList[idx] = {
+                        name: args.name,
+                        age: args.age,
+                        id: args.id
+                    }
+                }
+                return userList[idx];
+            }
+        }
     }
 });
 
 module.exports = new GraphQLSchema({
-    query: RootQuery
+    query: RootQuery,
+    mutation: RootMutations
 });
