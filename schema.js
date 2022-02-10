@@ -1,4 +1,4 @@
-const { GraphQLObjectType, GraphQLInt, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLSchema } = require('graphql');
+const { GraphQLNonNull, GraphQLObjectType, GraphQLInt, GraphQLString, GraphQLBoolean, GraphQLList, GraphQLSchema } = require('graphql');
 const axios = require('axios');
 
 // Launch Type
@@ -102,7 +102,7 @@ const RootMutations = new GraphQLObjectType({
         addUser: {
             type: UserType,
             args: {
-                name: { type: GraphQLString },
+                name: { type: new GraphQLNonNull(GraphQLString) },
                 age: { type: GraphQLInt }
             },
             resolve(parent, args) {
@@ -118,7 +118,7 @@ const RootMutations = new GraphQLObjectType({
         deleteUser: {
             type: UserType,
             args: {
-                id: { type: GraphQLInt }
+                id: { type: new GraphQLNonNull(GraphQLInt) }
             },
             resolve(parent, args) {
                 const idx = userList.findIndex(user => user.id === args.id);
@@ -131,7 +131,7 @@ const RootMutations = new GraphQLObjectType({
         updateUser: {
             type: UserType,
             args: {
-                id: { type: GraphQLInt },
+                id: { type: new GraphQLNonNull(GraphQLInt) },
                 name: { type: GraphQLString },
                 age: { type: GraphQLInt }
             },
